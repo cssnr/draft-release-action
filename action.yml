@@ -1,0 +1,38 @@
+name: "Draft Release Action"
+description: "Automatically Draft Releases with Semantic Version Tags"
+author: "Shane"
+branding:
+  icon: "repeat"
+  color: "green"
+
+inputs:
+  semver:
+    description: "New Version: See semver.inc"
+    required: false
+    default: "prerelease"
+  #patch:
+  #  description: "New Version: major, minor, micro, patch"
+  #  required: false
+  #  default: ""
+  prerelease:
+    description: "Mark release as prerelease"
+    required: false
+    default: "true"
+  summary:
+    description: "Add Summary to Job"
+    required: false
+    default: "true"
+  token:
+    description: "GitHub Token"
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  release:
+    description: "Release JSON Object"
+  url:
+    description: "Release HTML URL"
+
+runs:
+  using: "node20"
+  main: "dist/index.js"
