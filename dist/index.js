@@ -34493,7 +34493,11 @@ async function processRelease(config) {
         }
     }
 
-    const tag_name = semver.inc(latest.tag_name, config.semver)
+    const tag_name = semver.inc(
+        latest.tag_name,
+        config.semver,
+        config.identifier
+    )
     if (!tag_name) {
         throw new Error(
             `Unable to parse ${config.semver} from ${latest.tag_name}`
@@ -34547,7 +34551,7 @@ async function addSummary(config, response) {
  * Get Config
  * @typedef {Object} Config
  * @property {String} semver
- * @property {String} patch
+ * @property {String} identifier
  * @property {Boolean} prerelease
  * @property {Boolean} summary
  * @property {String} token
@@ -34556,7 +34560,7 @@ async function addSummary(config, response) {
 function getConfig() {
     return {
         semver: core.getInput('semver', { required: true }),
-        patch: core.getInput('patch'),
+        identifier: core.getInput('identifier'),
         prerelease: core.getBooleanInput('prerelease'),
         summary: core.getBooleanInput('summary'),
         token: core.getInput('token', { required: true }),

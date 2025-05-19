@@ -10,6 +10,10 @@ inputs:
     description: "New Version: See semver.inc"
     required: false
     default: "prerelease"
+  identifier:
+    description: "Prerelease Tag to Append"
+    required: false
+    default: "beta"
   #patch:
   #  description: "New Version: major, minor, micro, patch"
   #  required: false

@@ -35,6 +35,7 @@ Want to see more feature? [Request one](https://github.com/cssnr/draft-release-a
 | Input      | Req. | Default&nbsp;Value | Input&nbsp;Description         |
 | :--------- | :--: | :----------------- | :----------------------------- |
 | semver     |  -   | `prerelease`       | Semantaic Version to Incriment |
+| identifier |  -   | `beta`             | Prerelease Tag to Append       |
 | prerelease |  -   | `true`             | Set Draft as Prerelease        |
 | summary    |  -   | `true`             | Add Job Summary to Workflow    |
 | token      |  -   | `github.token`     | Only for Use with a PAT        |
