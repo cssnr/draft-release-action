@@ -34479,18 +34479,12 @@ async function processRelease(config) {
         latest.author.id === bot_id &&
         latest.body.includes(script_id)
     ) {
-        core.info('⌛ Processing Latest Draft...')
-        if (!previous || semver.gte(latest.tag_name, previous.tag_name)) {
-            core.info(`Using Latest Draft: \u001b[32;1m${latest.tag_name}`)
-            return { data: latest }
-        } else {
-            core.info(`Deleting Latest Draft: \u001b[31;1m${latest.tag_name}`)
-            const response = await octokit.rest.repos.deleteRelease({
-                ...github.context.repo,
-                release_id: latest.id,
-            })
-            console.log('response.status:', response.status)
-        }
+        core.info(`⛔ Deleting Latest Draft: \u001b[31;1m${latest.tag_name}`)
+        const response = await octokit.rest.repos.deleteRelease({
+            ...github.context.repo,
+            release_id: latest.id,
+        })
+        console.log('response.status:', response.status)
     }
 
     const tag_name = semver.inc(
