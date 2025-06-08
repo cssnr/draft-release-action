@@ -78,7 +78,7 @@ async function processRelease(config) {
         throw new Error('No previous release found. Create one first...')
     }
 
-    const [latest, previous] = releases.data
+    let [latest, previous] = releases.data
     // console.log('latest:', latest)
     // console.log('previous:', previous)
     console.log('latest.draft:', latest?.draft)
@@ -97,6 +97,7 @@ async function processRelease(config) {
             release_id: latest.id,
         })
         console.log('response.status:', response.status)
+        latest = previous
     }
 
     const tag_name = semver.inc(
