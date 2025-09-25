@@ -4,15 +4,15 @@ on:
   workflow_dispatch:
   #schedule:
   #  - cron: "18 18 * * 1,3,5"
-  push:
-    branches: ["**"]
-    paths:
-      - "dist/**"
-      - "src/**"
-      - "package*.json"
-      - "requirements*.txt"
-      - ".github/workflows/test.yaml"
-      - "action.yml"
+  #push:
+  #  branches: ["**"]
+  #  paths:
+  #    - "dist/**"
+  #    - "src/**"
+  #    - "package*.json"
+  #    - "requirements*.txt"
+  #    - ".github/workflows/test.yaml"
+  #    - "action.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

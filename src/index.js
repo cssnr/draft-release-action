@@ -24,14 +24,14 @@ const script_id = '<!-- cssnr/draft-release-action -->'
         console.log('github.context.ref:', github.context.ref)
         core.endGroup() // Debug
 
-        // Config
-        const config = getConfig()
-        core.startGroup('Config')
-        console.log(config)
-        core.endGroup() // Config
+        // Inputs
+        const inputs = getInputs()
+        core.startGroup('Inputs')
+        console.log(inputs)
+        core.endGroup() // Inputs
 
         // Process
-        const response = await processRelease(config)
+        const response = await processRelease(inputs)
         core.startGroup('Response')
         console.log(response)
         core.endGroup() // Response
@@ -42,10 +42,10 @@ const script_id = '<!-- cssnr/draft-release-action -->'
         core.setOutput('url', response.data.html_url)
 
         // Summary
-        if (config.summary) {
+        if (inputs.summary) {
             core.info('📝 Writing Job Summary')
             try {
-                await addSummary(config, response)
+                await addSummary(inputs, response)
             } catch (e) {
                 console.log(e)
                 core.error(`Error writing Job Summary ${e.message}`)
@@ -62,11 +62,11 @@ const script_id = '<!-- cssnr/draft-release-action -->'
 
 /**
  * Process Release
- * @param {Config} config
+ * @param {Inputs} inputs
  * @return {Promise<Object>}
  */
-async function processRelease(config) {
-    const octokit = github.getOctokit(config.token)
+async function processRelease(inputs) {
+    const octokit = github.getOctokit(inputs.token)
     // TODO: Get more than 2 releases and process all drafts...
     const releases = await octokit.rest.repos.listReleases({
         ...github.context.repo,
@@ -86,11 +86,7 @@ async function processRelease(config) {
     console.log('latest.tag_name:', latest?.tag_name)
     console.log('previous.tag_name:', previous?.tag_name)
     // if (latest.draft && latest.body.includes(script_id)) {
-    if (
-        latest.draft &&
-        latest.author.id === bot_id &&
-        latest.body.includes(script_id)
-    ) {
+    if (latest.draft && latest.author.id === bot_id && latest.body.includes(script_id)) {
         core.info(`⛔ Deleting Latest Draft: \u001b[31;1m${latest.tag_name}`)
         const response = await octokit.rest.repos.deleteRelease({
             ...github.context.repo,
@@ -100,15 +96,9 @@ async function processRelease(config) {
         latest = previous
     }
 
-    const tag_name = semver.inc(
-        latest.tag_name,
-        config.semver,
-        config.identifier
-    )
+    const tag_name = semver.inc(latest.tag_name, inputs.semver, inputs.identifier)
     if (!tag_name) {
-        throw new Error(
-            `Unable to parse ${config.semver} from ${latest.tag_name}`
-        )
+        throw new Error(`Unable to parse ${inputs.semver} from ${latest.tag_name}`)
     }
 
     core.info(`Creating New Draft: \u001b[33;1m${tag_name}`)
@@ -116,7 +106,7 @@ async function processRelease(config) {
         ...github.context.repo,
         tag_name,
         draft: true,
-        prerelease: config.prerelease,
+        prerelease: inputs.prerelease,
         generate_release_notes: true,
         body: `\n\n\n\n${script_id}`,
     })
@@ -126,11 +116,11 @@ async function processRelease(config) {
 
 /**
  * Add Summary
- * @param {Config} config
+ * @param {Inputs} inputs
  * @param {Object} response
  * @return {Promise<void>}
  */
-async function addSummary(config, response) {
+async function addSummary(inputs, response) {
     core.summary.addRaw('## Draft Release Action\n\n')
     console.log('response.status:', response.status)
     const result = response.status
@@ -140,11 +130,11 @@ async function addSummary(config, response) {
         `${result} \`${response.data.tag_name}\`.\n\n${response.data.html_url}\n\n`
     )
 
-    delete config.token
-    const yaml = Object.entries(config)
+    delete inputs.token
+    const yaml = Object.entries(inputs)
         .map(([k, v]) => `${k}: ${JSON.stringify(v)}`)
         .join('\n')
-    core.summary.addRaw('<details><summary>Config</summary>')
+    core.summary.addRaw('<details><summary>Inputs</summary>')
     core.summary.addCodeBlock(yaml, 'yaml')
     core.summary.addRaw('</details>\n')
 
@@ -155,16 +145,16 @@ async function addSummary(config, response) {
 }
 
 /**
- * Get Config
- * @typedef {Object} Config
+ * Get Inputs
+ * @typedef {Object} Inputs
  * @property {String} semver
  * @property {String} identifier
  * @property {Boolean} prerelease
  * @property {Boolean} summary
  * @property {String} token
- * @return {Config}
+ * @return {Inputs}
  */
-function getConfig() {
+function getInputs() {
     return {
         semver: core.getInput('semver', { required: true }),
         identifier: core.getInput('identifier'),
