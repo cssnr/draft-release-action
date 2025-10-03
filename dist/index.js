@@ -34567,6 +34567,10 @@ const script_id = '<!-- cssnr/draft-release-action -->'
         core.startGroup('Response')
         console.log(response)
         core.endGroup() // Response
+        if (!response) {
+            console.log('Set Neutral is not yet implemented so exiting with success.')
+            return core.info(`⚠️ \u001b[32;1mNo Releases to Process`)
+        }
 
         // Outputs
         core.info('📩 Setting Outputs')
@@ -34595,7 +34599,7 @@ const script_id = '<!-- cssnr/draft-release-action -->'
 /**
  * Process Release
  * @param {Inputs} inputs
- * @return {Promise<Object>}
+ * @return {Promise<Object|undefined>}
  */
 async function processRelease(inputs) {
     const octokit = github.getOctokit(inputs.token)
@@ -34607,7 +34611,8 @@ async function processRelease(inputs) {
     // console.log('releases:', releases)
     if (!releases?.data?.length) {
         console.log('releases:', releases)
-        throw new Error('No previous release found. Create one first...')
+        core.error('No previous release found. Create one first...')
+        return
     }
 
     let [latest, previous] = releases.data
