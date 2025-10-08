@@ -7,11 +7,11 @@ on:
   #push:
   #  branches: ["**"]
   #  paths:
+  #    - ".github/workflows/test.yaml"
   #    - "dist/**"
   #    - "src/**"
   #    - "package*.json"
   #    - "requirements*.txt"
-  #    - ".github/workflows/test.yaml"
   #    - "action.yml"
 
 concurrency:
@@ -23,6 +23,7 @@ jobs:
     name: "Test"
     runs-on: ubuntu-latest
     timeout-minutes: 5
+
     permissions:
       contents: write
 
@@ -35,6 +36,11 @@ jobs:
         continue-on-error: true
         run: |
           cat "${GITHUB_EVENT_PATH}"
+
+      - name: "INOP"
+        run: |
+          echo "This test must be updated for this action"
+          exit 1
 
       - name: "Test Local Action"
         id: test
