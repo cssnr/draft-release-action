@@ -34672,7 +34672,7 @@ async function processRelease(inputs) {
         prerelease: inputs.prerelease,
         generate_release_notes: false,
         name: notes.data.name,
-        body: notes.data.body,
+        body: `\n\n\n\n${script_id}\n${notes.data.body}`,
     })
     console.log('response.status:', response.status)
     return response
