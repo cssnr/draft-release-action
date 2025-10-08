@@ -90,7 +90,6 @@ async function processRelease(inputs) {
     console.log('previous.draft:', previous?.draft)
     console.log('latest.tag_name:', latest?.tag_name)
     console.log('previous.tag_name:', previous?.tag_name)
-    // if (latest.draft && latest.body.includes(script_id)) {
     if (latest.draft && latest.author.id === bot_id && latest.body.includes(script_id)) {
         core.info(`⛔ Deleting Latest Draft: \u001b[31;1m${latest.tag_name}`)
         const response = await octokit.rest.repos.deleteRelease({
@@ -106,14 +105,23 @@ async function processRelease(inputs) {
         throw new Error(`Unable to parse ${inputs.semver} from ${latest.tag_name}`)
     }
 
+    const notes = await octokit.rest.repos.generateReleaseNotes({
+        ...github.context.repo,
+        tag_name,
+        previous_tag_name: latest.tag_name,
+    })
+    console.log('notes.status:', notes.status)
+    console.log('notes.data:', notes.data)
+
     core.info(`Creating New Draft: \u001b[33;1m${tag_name}`)
     const response = await octokit.rest.repos.createRelease({
         ...github.context.repo,
         tag_name,
         draft: true,
         prerelease: inputs.prerelease,
-        generate_release_notes: true,
-        body: `\n\n\n\n${script_id}`,
+        generate_release_notes: false,
+        name: notes.data.name,
+        body: notes.data.body,
     })
     console.log('response.status:', response.status)
     return response
