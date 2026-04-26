@@ -19,6 +19,8 @@ inputs:
   prerelease:
     description: "Mark release as prerelease"
     default: "true"
+  prefix:
+    description: "Release Tag Prefix"
   summary:
     description: "Add Summary to Job"
     default: "true"
