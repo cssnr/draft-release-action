@@ -1,4 +1,4 @@
-const github = require('@actions/github')
+import * as github from '@actions/github'
 
 class Api {
     /**
@@ -61,4 +61,4 @@ class Api {
     }
 }
 
-module.exports = Api
+export default Api

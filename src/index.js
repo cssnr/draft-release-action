@@ -1,7 +1,6 @@
-const core = require('@actions/core')
-const github = require('@actions/github')
-
-const semver = require('semver')
+import * as core from '@actions/core'
+import * as github from '@actions/github'
+import semver from 'semver'
 
 // const bot_id = 6071159  // TODO: DEBUG: Remove This
 const bot_id = 41898282
@@ -67,7 +66,7 @@ const script_id = '<!-- cssnr/draft-release-action -->'
 /**
  * Process Release
  * @param {Inputs} inputs
- * @return {Promise<Object|undefined>}
+ * @return {Promise<object|undefined>}
  */
 async function processRelease(inputs) {
     const octokit = github.getOctokit(inputs.token)
@@ -100,10 +99,13 @@ async function processRelease(inputs) {
         latest = previous
     }
 
-    const tag_name = semver.inc(latest.tag_name, inputs.semver, inputs.identifier)
+    let tag_name = semver.inc(latest.tag_name, inputs.semver, inputs.identifier)
+    console.log('tag_name:', tag_name)
     if (!tag_name) {
         throw new Error(`Unable to parse ${inputs.semver} from ${latest.tag_name}`)
     }
+    tag_name = `${inputs.prefix}${tag_name}`
+    console.log('tag_name w/ prefix:', tag_name)
 
     const notes = await octokit.rest.repos.generateReleaseNotes({
         ...github.context.repo,
@@ -130,7 +132,7 @@ async function processRelease(inputs) {
 /**
  * Add Summary
  * @param {Inputs} inputs
- * @param {Object} response
+ * @param {object} response
  * @return {Promise<void>}
  */
 async function addSummary(inputs, response) {
@@ -140,7 +142,7 @@ async function addSummary(inputs, response) {
         ? '**Created new release:**'
         : '**Previous draft unchanged:**'
     core.summary.addRaw(
-        `${result} \`${response.data.tag_name}\`.\n\n${response.data.html_url}\n\n`
+        `${result} \`${response.data.tag_name}\`.\n\n${response.data.html_url}\n\n`,
     )
 
     delete inputs.token
@@ -159,12 +161,13 @@ async function addSummary(inputs, response) {
 
 /**
  * Get Inputs
- * @typedef {Object} Inputs
- * @property {String} semver
- * @property {String} identifier
- * @property {Boolean} prerelease
- * @property {Boolean} summary
- * @property {String} token
+ * @typedef {object} Inputs
+ * @property {string} semver
+ * @property {string} identifier
+ * @property {boolean} prerelease
+ * @property {string} prefix
+ * @property {boolean} summary
+ * @property {string} token
  * @return {Inputs}
  */
 function getInputs() {
@@ -172,6 +175,7 @@ function getInputs() {
         semver: core.getInput('semver', { required: true }),
         identifier: core.getInput('identifier'),
         prerelease: core.getBooleanInput('prerelease'),
+        prefix: core.getInput('prefix'),
         summary: core.getBooleanInput('summary'),
         token: core.getInput('token', { required: true }),
     }
