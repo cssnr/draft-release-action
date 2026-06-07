@@ -111,6 +111,7 @@ async function processRelease(inputs) {
         ...github.context.repo,
         tag_name,
         previous_tag_name: latest.tag_name,
+        target_commitish: inputs.target_commitish,
     })
     console.log('notes.status:', notes.status)
     console.log('notes.data:', notes.data)
@@ -168,6 +169,7 @@ async function addSummary(inputs, response) {
  * @property {string} prefix
  * @property {boolean} summary
  * @property {string} token
+ * @property {string|undefined} target_commitish
  * @return {Inputs}
  */
 function getInputs() {
@@ -178,5 +180,6 @@ function getInputs() {
         prefix: core.getInput('prefix'),
         summary: core.getBooleanInput('summary'),
         token: core.getInput('token', { required: true }),
+        target_commitish: core.getInput('target_commitish') || undefined,
     }
 }

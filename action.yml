@@ -1,6 +1,7 @@
 name: "Draft Release Action"
 description: "Automatically Draft Releases with Semantic Version Tags"
 author: "Shane"
+
 branding:
   icon: "repeat"
   color: "green"
@@ -27,6 +28,8 @@ inputs:
   token:
     description: "GitHub Token"
     default: ${{ github.token }}
+  target_commitish:
+    description: "The commitish value (branch or SHA) that the release tag targets. Defaults to the repository's default branch."
 
 outputs:
   release:
