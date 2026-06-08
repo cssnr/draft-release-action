@@ -35,17 +35,23 @@ Want to see more feature? [Request one](https://github.com/cssnr/draft-release-a
 
 ## Inputs
 
-| Input      | Req. | Default&nbsp;Value | Input&nbsp;Description         |
-| :--------- | :--: | :----------------- | :----------------------------- |
-| semver     |  -   | `prerelease`       | Semantaic Version to Incriment |
-| identifier |  -   | `beta`             | Prerelease Tag to Append       |
-| prerelease |  -   | `true`             | Set Draft as Prerelease        |
-| prefix     |  -   | -                  | Release Tag Prefix             |
-| summary    |  -   | `true`             | Add Job Summary to Workflow    |
-| token      |  -   | `github.token`     | Only for Use with a PAT        |
+| Input             | Req. | Default&nbsp;Value | Input&nbsp;Description             |
+| :---------------- | :--: | :----------------- | :--------------------------------- |
+| semver            |  -   | `prerelease`       | Semantaic Version to Incriment     |
+| identifier        |  -   | `beta`             | Prerelease Tag to Append           |
+| prerelease        |  -   | `true`             | Set Draft as Prerelease            |
+| prefix            |  -   | -                  | Release Tag Prefix                 |
+| previous_tag_name |  -   | -                  | Previous Tag or SHA for Comparison |
+| summary           |  -   | `true`             | Add Job Summary to Workflow        |
+| token             |  -   | `github.token`     | Only for Use with a PAT            |
 
 **semver:** This is the string passed to `semver.inc()` to determine which version to increment.
 For more details, see the [docs](https://github.com/npm/node-semver?tab=readme-ov-file#functions).
+
+**previous_tag_name:** Override the previous tag used as the starting point for generating release notes.
+This can be a tag name or a commit SHA. Use this if your release tag was moved after publication
+(e.g., by a force-push to a release branch) and the auto-detected tag name no longer produces
+correct release notes. Defaults to the latest release tag name.
 
 <details><summary>👀 View Example Job Summary</summary>
 

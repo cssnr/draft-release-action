@@ -18,7 +18,7 @@ inputs:
   #  required: false
   #  default: ""
   prerelease:
-    description: "Mark release as prerelease"
+    description: "Mark Release as prerelease"
     default: "true"
   prefix:
     description: "Release Tag Prefix"
@@ -28,8 +28,8 @@ inputs:
   token:
     description: "GitHub Token"
     default: ${{ github.token }}
-  target_commitish:
-    description: "The commitish value (branch or SHA) that the release tag targets. Defaults to the repository's default branch."
+  previous_tag_name:
+    description: "Previous Tag or SHA for Comparison"
 
 outputs:
   release:

@@ -110,8 +110,7 @@ async function processRelease(inputs) {
     const notes = await octokit.rest.repos.generateReleaseNotes({
         ...github.context.repo,
         tag_name,
-        previous_tag_name: latest.tag_name,
-        target_commitish: latest.target_commitish, // TODO: REMOVE INPUT IF WORKING
+        previous_tag_name: inputs.previous_tag_name || latest.tag_name,
     })
     console.log('notes.status:', notes.status)
     console.log('notes.data:', notes.data)
@@ -169,7 +168,7 @@ async function addSummary(inputs, response) {
  * @property {string} prefix
  * @property {boolean} summary
  * @property {string} token
- * @property {string|undefined} target_commitish
+ * @property {string} previous_tag_name
  * @return {Inputs}
  */
 function getInputs() {
@@ -180,6 +179,6 @@ function getInputs() {
         prefix: core.getInput('prefix'),
         summary: core.getBooleanInput('summary'),
         token: core.getInput('token', { required: true }),
-        target_commitish: core.getInput('target_commitish') || undefined,
+        previous_tag_name: core.getInput('previous_tag_name'),
     }
 }
