@@ -36400,7 +36400,7 @@ async function processRelease(inputs) {
         ...context.repo,
         tag_name,
         previous_tag_name: latest.tag_name,
-        target_commitish: inputs.target_commitish,
+        target_commitish: latest.target_commitish, // TODO: REMOVE INPUT IF WORKING
     });
     console.log('notes.status:', notes.status);
     console.log('notes.data:', notes.data);
