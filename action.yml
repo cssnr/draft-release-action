@@ -32,7 +32,6 @@ inputs:
     description: "Previous Tag or SHA for Comparison"
   notes_strip_prefix:
     description: "Strip Prefix from Release Notes Tag"
-    default: "false"
 
 outputs:
   release:
