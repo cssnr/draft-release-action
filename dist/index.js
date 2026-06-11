@@ -36388,17 +36388,18 @@ async function processRelease(inputs) {
         latest = previous;
     }
 
-    let tag_name = semver.inc(latest.tag_name, inputs.semver, inputs.identifier);
-    console.log('tag_name:', tag_name);
-    if (!tag_name) {
+    const new_name = semver.inc(latest.tag_name, inputs.semver, inputs.identifier);
+    console.log('new_name:', new_name);
+    if (!new_name) {
         throw new Error(`Unable to parse ${inputs.semver} from ${latest.tag_name}`)
     }
-    tag_name = `${inputs.prefix}${tag_name}`;
-    console.log('tag_name w/ prefix:', tag_name);
+    const tag_name = `${inputs.prefix}${new_name}`;
+    console.log('tag_name:', tag_name);
 
+    const notes_tag_name = inputs.notes_strip_prefix ? new_name : tag_name;
     const notes = await octokit.rest.repos.generateReleaseNotes({
         ...context.repo,
-        tag_name,
+        tag_name: notes_tag_name,
         previous_tag_name: inputs.previous_tag_name || latest.tag_name,
     });
     console.log('notes.status:', notes.status);
@@ -36458,6 +36459,7 @@ async function addSummary(inputs, response) {
  * @property {boolean} summary
  * @property {string} token
  * @property {string} previous_tag_name
+ * @property {boolean} notes_strip_prefix
  * @return {Inputs}
  */
 function getInputs() {
@@ -36469,5 +36471,6 @@ function getInputs() {
         summary: getBooleanInput('summary'),
         token: getInput('token', { required: true }),
         previous_tag_name: getInput('previous_tag_name'),
+        notes_strip_prefix: getBooleanInput('notes_strip_prefix'),
     }
 }
