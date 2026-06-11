@@ -35,17 +35,28 @@ Want to see more feature? [Request one](https://github.com/cssnr/draft-release-a
 
 ## Inputs
 
-| Input      | Req. | Default&nbsp;Value | Input&nbsp;Description         |
-| :--------- | :--: | :----------------- | :----------------------------- |
-| semver     |  -   | `prerelease`       | Semantaic Version to Incriment |
-| identifier |  -   | `beta`             | Prerelease Tag to Append       |
-| prerelease |  -   | `true`             | Set Draft as Prerelease        |
-| prefix     |  -   | -                  | Release Tag Prefix             |
-| summary    |  -   | `true`             | Add Job Summary to Workflow    |
-| token      |  -   | `github.token`     | Only for Use with a PAT        |
+| Input              | Req. | Default&nbsp;Value | Input&nbsp;Description              |
+| :----------------- | :--: | :----------------- | :---------------------------------- |
+| semver             |  -   | `prerelease`       | Semantaic Version to Incriment      |
+| identifier         |  -   | `beta`             | Prerelease Tag to Append            |
+| prerelease         |  -   | `true`             | Set Draft as Prerelease             |
+| prefix             |  -   | -                  | Release Tag Prefix                  |
+| previous_tag_name  |  -   | -                  | Previous Tag or SHA for Comparison  |
+| notes_strip_prefix |  -   | -                  | Strip Prefix from Release Notes Tag |
+| summary            |  -   | `true`             | Add Job Summary to Workflow         |
+| token              |  -   | `github.token`     | Only for Use with a PAT             |
 
 **semver:** This is the string passed to `semver.inc()` to determine which version to increment.
 For more details, see the [docs](https://github.com/npm/node-semver?tab=readme-ov-file#functions).
+
+**previous_tag_name:** Override the previous tag used as the starting point for generating release notes.
+This can be a tag name or a commit SHA. Use this if your release tag was moved after publication
+(e.g., by a force-push to a release branch) and the auto-detected tag name no longer produces
+correct release notes. Defaults to the latest release tag name.
+
+**notes_strip_prefix:** Strip the prefix from the tag name when generating release notes.
+When enabled, the prefix (e.g. `v`) is removed from the tag name before passing it to
+`generateReleaseNotes`, so the notes reference the version number without the prefix.
 
 <details><summary>👀 View Example Job Summary</summary>
 
@@ -123,7 +134,7 @@ jobs:
 
     steps:
       - name: 'Checkout'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: 'Draft Release Action'
         id: draft
@@ -154,7 +165,7 @@ You can view the release notes for each version on the [releases](https://github
 The **Major** tag is recommended. It is the most up-to-date and always backwards compatible.
 Breaking changes would result in a **Major** version bump. At a minimum you should use a **Minor** tag.
 
-## Support
+# Support
 
 If you run into any issues or need help getting started, please do one of the following:
 
@@ -184,7 +195,9 @@ Additionally, you can support other [GitHub Actions](https://actions.cssnr.com/)
 - [Stack Deploy Action](https://github.com/cssnr/stack-deploy-action?tab=readme-ov-file#readme)
 - [Portainer Stack Deploy Action](https://github.com/cssnr/portainer-stack-deploy-action?tab=readme-ov-file#readme)
 - [Docker Context Action](https://github.com/cssnr/docker-context-action?tab=readme-ov-file#readme)
+- [AI Issue Action](https://github.com/cssnr/ai-issue-action?tab=readme-ov-file#readme)
 - [Actions Up Action](https://github.com/cssnr/actions-up-action?tab=readme-ov-file#readme)
+- [Webstore Publish Action](https://github.com/cssnr/webstore-publish-action?tab=readme-ov-file#readme)
 - [Rhysd Actionlint Action](https://github.com/cssnr/actionlint-action?tab=readme-ov-file#readme)
 - [Zensical Action](https://github.com/cssnr/zensical-action?tab=readme-ov-file#readme)
 - [VirusTotal Action](https://github.com/cssnr/virustotal-action?tab=readme-ov-file#readme)
@@ -218,6 +231,7 @@ These actions are not published on the Marketplace, but may be useful.
 - [cssnr/push-artifacts-action](https://github.com/cssnr/push-artifacts-action?tab=readme-ov-file#readme) - Sync files to a remote host with rsync.
 - [smashedr/update-release-notes-action](https://github.com/smashedr/update-release-notes-action?tab=readme-ov-file#readme) - Update release notes.
 - [smashedr/combine-release-notes-action](https://github.com/smashedr/combine-release-notes-action?tab=readme-ov-file#readme) - Combine release notes.
+- [smashedr/openai-translate-action](https://github.com/smashedr/openai-translate-action?tab=readme-ov-file#readme) - OpenAI translate action.
 
 ---
 

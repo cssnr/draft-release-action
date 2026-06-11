@@ -3,7 +3,7 @@ name: "Lint"
 on:
   workflow_dispatch:
   push:
-    branches: [master]
+    branches: [main, master]
   pull_request:
 
 concurrency:
@@ -26,26 +26,22 @@ jobs:
       - name: "Checkout"
         uses: actions/checkout@v6
 
-      - name: "Setup Node 24"
+      - name: "Setup Node"
         uses: actions/setup-node@v6
         with:
           node-version: 24
 
-      - name: "Install"
+      - name: "install"
         id: install
-        run: |
-          npm ci
+        run: npm ci
 
       - name: "eslint"
-        id: eslint
         if: ${{ !cancelled() }}
-        run: |
-          npm run lint
+        run: npm run lint
 
       - name: "prettier"
         if: ${{ !cancelled() }}
-        run: |
-          npm run prettier:check
+        run: npm run prettier:check
 
       - name: "yamllint"
         if: ${{ !cancelled() }}
@@ -61,7 +57,6 @@ jobs:
         if: ${{ !cancelled() }}
         uses: cssnr/actionlint-action@v1
 
-      - name: "Verify action.yml"
+      - name: "action.yml"
         if: ${{ !cancelled() }}
-        run: |
-          yq -e '.runs.main | test("^dist/")' action.yml
+        run: yq -e '.runs.main | test("^dist/")' action.yml

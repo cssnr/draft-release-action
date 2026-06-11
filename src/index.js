@@ -99,18 +99,19 @@ async function processRelease(inputs) {
         latest = previous
     }
 
-    let tag_name = semver.inc(latest.tag_name, inputs.semver, inputs.identifier)
-    console.log('tag_name:', tag_name)
-    if (!tag_name) {
+    const new_name = semver.inc(latest.tag_name, inputs.semver, inputs.identifier)
+    console.log('new_name:', new_name)
+    if (!new_name) {
         throw new Error(`Unable to parse ${inputs.semver} from ${latest.tag_name}`)
     }
-    tag_name = `${inputs.prefix}${tag_name}`
-    console.log('tag_name w/ prefix:', tag_name)
+    const tag_name = `${inputs.prefix}${new_name}`
+    console.log('tag_name:', tag_name)
 
+    const notes_tag_name = inputs.notes_strip_prefix ? new_name : tag_name
     const notes = await octokit.rest.repos.generateReleaseNotes({
         ...github.context.repo,
-        tag_name,
-        previous_tag_name: latest.tag_name,
+        tag_name: notes_tag_name,
+        previous_tag_name: inputs.previous_tag_name || latest.tag_name,
     })
     console.log('notes.status:', notes.status)
     console.log('notes.data:', notes.data)
@@ -122,7 +123,7 @@ async function processRelease(inputs) {
         draft: true,
         prerelease: inputs.prerelease,
         generate_release_notes: false,
-        name: notes.data.name,
+        name: tag_name, // changed from: notes.data.name
         body: `\n\n\n${script_id}\n\n${notes.data.body}`,
     })
     console.log('response.status:', response.status)
@@ -168,6 +169,8 @@ async function addSummary(inputs, response) {
  * @property {string} prefix
  * @property {boolean} summary
  * @property {string} token
+ * @property {string} previous_tag_name
+ * @property {boolean} notes_strip_prefix
  * @return {Inputs}
  */
 function getInputs() {
@@ -178,5 +181,7 @@ function getInputs() {
         prefix: core.getInput('prefix'),
         summary: core.getBooleanInput('summary'),
         token: core.getInput('token', { required: true }),
+        previous_tag_name: core.getInput('previous_tag_name'),
+        notes_strip_prefix: core.getBooleanInput('notes_strip_prefix'),
     }
 }

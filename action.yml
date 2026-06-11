@@ -1,6 +1,7 @@
 name: "Draft Release Action"
 description: "Automatically Draft Releases with Semantic Version Tags"
 author: "Shane"
+
 branding:
   icon: "repeat"
   color: "green"
@@ -17,7 +18,7 @@ inputs:
   #  required: false
   #  default: ""
   prerelease:
-    description: "Mark release as prerelease"
+    description: "Mark Release as prerelease"
     default: "true"
   prefix:
     description: "Release Tag Prefix"
@@ -27,6 +28,10 @@ inputs:
   token:
     description: "GitHub Token"
     default: ${{ github.token }}
+  previous_tag_name:
+    description: "Previous Tag or SHA for Comparison"
+  notes_strip_prefix:
+    description: "Strip Prefix from Release Notes Tag"
 
 outputs:
   release:
