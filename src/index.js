@@ -123,7 +123,7 @@ async function processRelease(inputs) {
         draft: true,
         prerelease: inputs.prerelease,
         generate_release_notes: false,
-        name: notes.data.name,
+        name: tag_name,
         body: `\n\n\n${script_id}\n\n${notes.data.body}`,
     })
     console.log('response.status:', response.status)
