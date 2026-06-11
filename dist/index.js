@@ -35100,6 +35100,11 @@ function requireRange () {
 
 	const isX = id => !id || id.toLowerCase() === 'x' || id === '*';
 
+	const invalidXRangeOrder = (M, m, p) => (
+	  (isX(M) && !isX(m)) ||
+	  (isX(m) && p && !isX(p))
+	);
+
 	// ~, ~> --> * (any, kinda silly)
 	// ~2, ~2.x, ~2.x.x, ~>2, ~>2.x ~>2.x.x --> >=2.0.0 <3.0.0-0
 	// ~2.0, ~2.0.x, ~>2.0, ~>2.0.x --> >=2.0.0 <2.1.0-0
@@ -35196,10 +35201,10 @@ function requireRange () {
 	      if (M === '0') {
 	        if (m === '0') {
 	          ret = `>=${M}.${m}.${p
-	          }${z} <${M}.${m}.${+p + 1}-0`;
+	          } <${M}.${m}.${+p + 1}-0`;
 	        } else {
 	          ret = `>=${M}.${m}.${p
-	          }${z} <${M}.${+m + 1}.0-0`;
+	          } <${M}.${+m + 1}.0-0`;
 	        }
 	      } else {
 	        ret = `>=${M}.${m}.${p
@@ -35225,6 +35230,10 @@ function requireRange () {
 	  const r = options.loose ? re[t.XRANGELOOSE] : re[t.XRANGE];
 	  return comp.replace(r, (ret, gtlt, M, m, p, pr) => {
 	    debug('xRange', comp, ret, gtlt, M, m, p, pr);
+	    if (invalidXRangeOrder(M, m, p)) {
+	      return comp
+	    }
+
 	    const xM = isX(M);
 	    const xm = xM || isX(m);
 	    const xp = xm || isX(p);
@@ -36412,7 +36421,7 @@ async function processRelease(inputs) {
         draft: true,
         prerelease: inputs.prerelease,
         generate_release_notes: false,
-        name: tag_name,
+        name: tag_name, // changed from: notes.data.name
         body: `\n\n\n${script_id}\n\n${notes.data.body}`,
     });
     console.log('response.status:', response.status);

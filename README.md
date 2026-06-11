@@ -42,6 +42,7 @@ Want to see more feature? [Request one](https://github.com/cssnr/draft-release-a
 | prerelease        |  -   | `true`             | Set Draft as Prerelease            |
 | prefix            |  -   | -                  | Release Tag Prefix                 |
 | previous_tag_name |  -   | -                  | Previous Tag or SHA for Comparison |
+| notes_strip_prefix|  -   | -                  | Strip Prefix from Release Notes Tag|
 | summary           |  -   | `true`             | Add Job Summary to Workflow        |
 | token             |  -   | `github.token`     | Only for Use with a PAT            |
 
@@ -52,6 +53,10 @@ For more details, see the [docs](https://github.com/npm/node-semver?tab=readme-o
 This can be a tag name or a commit SHA. Use this if your release tag was moved after publication
 (e.g., by a force-push to a release branch) and the auto-detected tag name no longer produces
 correct release notes. Defaults to the latest release tag name.
+
+**notes_strip_prefix:** Strip the prefix from the tag name when generating release notes.
+When enabled, the prefix (e.g. `v`) is removed from the tag name before passing it to
+`generateReleaseNotes`, so the notes reference the version number without the prefix.
 
 <details><summary>👀 View Example Job Summary</summary>
 
