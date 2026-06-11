@@ -35,16 +35,16 @@ Want to see more feature? [Request one](https://github.com/cssnr/draft-release-a
 
 ## Inputs
 
-| Input             | Req. | Default&nbsp;Value | Input&nbsp;Description             |
-| :---------------- | :--: | :----------------- | :--------------------------------- |
-| semver            |  -   | `prerelease`       | Semantaic Version to Incriment     |
-| identifier        |  -   | `beta`             | Prerelease Tag to Append           |
-| prerelease        |  -   | `true`             | Set Draft as Prerelease            |
-| prefix            |  -   | -                  | Release Tag Prefix                 |
-| previous_tag_name |  -   | -                  | Previous Tag or SHA for Comparison |
-| notes_strip_prefix|  -   | -                  | Strip Prefix from Release Notes Tag|
-| summary           |  -   | `true`             | Add Job Summary to Workflow        |
-| token             |  -   | `github.token`     | Only for Use with a PAT            |
+| Input              | Req. | Default&nbsp;Value | Input&nbsp;Description              |
+| :----------------- | :--: | :----------------- | :---------------------------------- |
+| semver             |  -   | `prerelease`       | Semantaic Version to Incriment      |
+| identifier         |  -   | `beta`             | Prerelease Tag to Append            |
+| prerelease         |  -   | `true`             | Set Draft as Prerelease             |
+| prefix             |  -   | -                  | Release Tag Prefix                  |
+| previous_tag_name  |  -   | -                  | Previous Tag or SHA for Comparison  |
+| notes_strip_prefix |  -   | -                  | Strip Prefix from Release Notes Tag |
+| summary            |  -   | `true`             | Add Job Summary to Workflow         |
+| token              |  -   | `github.token`     | Only for Use with a PAT             |
 
 **semver:** This is the string passed to `semver.inc()` to determine which version to increment.
 For more details, see the [docs](https://github.com/npm/node-semver?tab=readme-ov-file#functions).
