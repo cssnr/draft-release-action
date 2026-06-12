@@ -1,3 +1,4 @@
+# https://www.schemastore.org/github-action.json
 name: "Draft Release Action"
 description: "Automatically Draft Releases with Semantic Version Tags"
 author: "Shane"
@@ -32,6 +33,9 @@ inputs:
     description: "Previous Tag or SHA for Comparison"
   notes_prefix:
     description: "Prefix for Release Notes Tag"
+  notes_strip_prefix:
+    description: "Does Nothing - Backwards Compatibility Only"
+    deprecationMessage: "Removed! Use - notes_prefix"
 
 outputs:
   release:
