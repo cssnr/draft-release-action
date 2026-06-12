@@ -33,13 +33,13 @@ jobs:
 
       - name: "Draft Release Action"
         id: draft
-        uses: cssnr/draft-release-action@master
+        uses: cssnr/draft-release-action@notes
         with:
           semver: patch
           prerelease: false
           prefix: v
           previous_tag_name: ${{ steps.tag.outputs.name }}
-          notes_prefix: "master-"
+          notes_prefix: "${{ github.ref_name }}-" # TODO: prefix - release.yaml
 
       - name: "Process Release Draft URL"
         run: |
