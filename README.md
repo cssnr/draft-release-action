@@ -35,16 +35,16 @@ Want to see more feature? [Request one](https://github.com/cssnr/draft-release-a
 
 ## Inputs
 
-| Input              | Req. | Default&nbsp;Value | Input&nbsp;Description              |
-| :----------------- | :--: | :----------------- | :---------------------------------- |
-| semver             |  -   | `prerelease`       | Semantaic Version to Incriment      |
-| identifier         |  -   | `beta`             | Prerelease Tag to Append            |
-| prerelease         |  -   | `true`             | Set Draft as Prerelease             |
-| prefix             |  -   | -                  | Release Tag Prefix                  |
-| previous_tag_name  |  -   | -                  | Previous Tag or SHA for Comparison  |
-| notes_strip_prefix |  -   | -                  | Strip Prefix from Release Notes Tag |
-| summary            |  -   | `true`             | Add Job Summary to Workflow         |
-| token              |  -   | `github.token`     | Only for Use with a PAT             |
+| Input             | Req. | Default&nbsp;Value | Input&nbsp;Description             |
+| :---------------- | :--: | :----------------- | :--------------------------------- |
+| semver            |  -   | `prerelease`       | Semantaic Version to Incriment     |
+| identifier        |  -   | `beta`             | Prerelease Tag to Append           |
+| prerelease        |  -   | `true`             | Set Draft as Prerelease            |
+| prefix            |  -   | -                  | Release Tag Prefix                 |
+| previous_tag_name |  -   | -                  | Previous Tag or SHA for Comparison |
+| notes_prefix      |  -   | -                  | Prefix for Release Notes Tag       |
+| summary           |  -   | `true`             | Add Job Summary to Workflow        |
+| token             |  -   | `github.token`     | Only for Use with a PAT            |
 
 **semver:** This is the string passed to `semver.inc()` to determine which version to increment.
 For more details, see the [docs](https://github.com/npm/node-semver?tab=readme-ov-file#functions).
@@ -54,9 +54,10 @@ This can be a tag name or a commit SHA. Use this if your release tag was moved a
 (e.g., by a force-push to a release branch) and the auto-detected tag name no longer produces
 correct release notes. Defaults to the latest release tag name.
 
-**notes_strip_prefix:** Strip the prefix from the tag name when generating release notes.
-When enabled, the prefix (e.g. `v`) is removed from the tag name before passing it to
-`generateReleaseNotes`, so the notes reference the version number without the prefix.
+**notes_prefix:** Override the prefix used for the tag name when generating release notes.
+When set, the prefix is prepended to the version number before passing to `generateReleaseNotes`.
+For example, if your release tag is `master-1.0.6` and you set `notes_prefix: ''`, the notes will
+reference `1.0.6` instead of `master-1.0.6`. If unset, the full release tag name is used.
 
 <details><summary>👀 View Example Job Summary</summary>
 
