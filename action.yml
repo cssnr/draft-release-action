@@ -30,9 +30,8 @@ inputs:
     default: ${{ github.token }}
   previous_tag_name:
     description: "Previous Tag or SHA for Comparison"
-  notes_strip_prefix:
-    description: "Strip Prefix from Release Notes Tag"
-    default: "false"
+  notes_prefix:
+    description: "Prefix for Release Notes Tag"
 
 outputs:
   release:

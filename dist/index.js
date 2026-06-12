@@ -36405,7 +36405,11 @@ async function processRelease(inputs) {
     const tag_name = `${inputs.prefix}${new_name}`;
     console.log('tag_name:', tag_name);
 
-    const notes_tag_name = inputs.notes_strip_prefix ? new_name : tag_name;
+    const notes_tag_name = inputs.notes_prefix
+        ? `${inputs.notes_prefix}${new_name}`
+        : tag_name;
+    console.log('notes_tag_name:', notes_tag_name);
+
     const notes = await octokit.rest.repos.generateReleaseNotes({
         ...context.repo,
         tag_name: notes_tag_name,
@@ -36468,7 +36472,7 @@ async function addSummary(inputs, response) {
  * @property {boolean} summary
  * @property {string} token
  * @property {string} previous_tag_name
- * @property {boolean} notes_strip_prefix
+ * @property {string} notes_prefix
  * @return {Inputs}
  */
 function getInputs() {
@@ -36480,6 +36484,6 @@ function getInputs() {
         summary: getBooleanInput('summary'),
         token: getInput('token', { required: true }),
         previous_tag_name: getInput('previous_tag_name'),
-        notes_strip_prefix: getBooleanInput('notes_strip_prefix'),
+        notes_prefix: getInput('notes_prefix'),
     }
 }
