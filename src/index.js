@@ -73,7 +73,7 @@ async function processRelease(inputs) {
     // TODO: Get more than 2 releases and process all drafts...
     const releases = await octokit.rest.repos.listReleases({
         ...github.context.repo,
-        per_page: 2,
+        per_page: 30,
     })
     // console.log('releases:', releases)
     if (!releases?.data?.length) {
@@ -112,10 +112,20 @@ async function processRelease(inputs) {
         : tag_name
     console.log('notes_tag_name:', notes_tag_name)
 
+    let previous_tag_name = inputs.previous_tag_name || latest.tag_name
+    if (!inputs.previous_tag_name && !inputs.prerelease) {
+        const stable = releases.data.find((r) => !r.draft && !r.prerelease)
+        if (stable) {
+            previous_tag_name = stable.tag_name
+            console.log('stable.tag_name:', stable.tag_name)
+        }
+    }
+    console.log('previous_tag_name:', previous_tag_name)
+
     const notes = await octokit.rest.repos.generateReleaseNotes({
         ...github.context.repo,
         tag_name: notes_tag_name,
-        previous_tag_name: inputs.previous_tag_name || latest.tag_name,
+        previous_tag_name,
     })
     console.log('notes.status:', notes.status)
     console.log('notes.data:', notes.data)
