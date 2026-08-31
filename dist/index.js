@@ -30922,7 +30922,7 @@ class RequestError extends Error {
 // pkg/dist-src/index.js
 
 // pkg/dist-src/version.js
-var VERSION$4 = "10.0.15";
+var VERSION$4 = "10.0.16";
 
 // pkg/dist-src/defaults.js
 var defaults_default = {
@@ -31287,7 +31287,7 @@ var createTokenAuth = function createTokenAuth2(token) {
   });
 };
 
-const VERSION$2 = "7.0.7";
+const VERSION$2 = "7.0.8";
 
 const noop = () => {
 };
@@ -36928,30 +36928,6 @@ async function processRelease(inputs) {
     let base = inputs.prerelease
         ? (releases.data.find((r) => !r.draft) ?? latest)
         : (releases.data.find((r) => !r.draft && !r.prerelease) ?? latest);
-
-    // Prerelease runs continue an existing prerelease train of the same
-    // identifier at the next version (e.g. 1.0.2-beta.0 -> 1.0.2-beta.1)
-    // instead of restarting at -beta.0 for every run.
-    if (inputs.prerelease) {
-        const expected = semver.inc(base.tag_name, inputs.semver, inputs.identifier);
-        const expectedVersion = semver.parse(expected);
-        if (expectedVersion) {
-            const train = releases.data.find((r) => {
-                const parsed = semver.parse(r.tag_name);
-                return (
-                    parsed &&
-                    parsed.major === expectedVersion.major &&
-                    parsed.minor === expectedVersion.minor &&
-                    parsed.patch === expectedVersion.patch &&
-                    parsed.prerelease?.[0] === inputs.identifier
-                )
-            });
-            if (train) {
-                console.log('train.tag_name:', train.tag_name);
-                base = train;
-            }
-        }
-    }
     console.log('base.tag_name:', base?.tag_name);
 
     const new_name = semver.inc(base.tag_name, inputs.semver, inputs.identifier);
@@ -36967,17 +36943,18 @@ async function processRelease(inputs) {
         : tag_name;
     console.log('notes_tag_name:', notes_tag_name);
 
-    // Only delete a previous draft with the exact tag being created. This keeps
-    // separate release trains (e.g. stable and beta workflows) from deleting
-    // each other's drafts.
-    const draft = releases.data.find(
+    // Delete any previous bot-created drafts in the same train (same prerelease
+    // flag and prefix), so separate release trains (e.g. stable and beta) don't
+    // delete each other's drafts while stale drafts in this train are cleaned up.
+    const drafts = releases.data.filter(
         (r) =>
             r.draft &&
-            r.tag_name === tag_name &&
+            r.prerelease === inputs.prerelease &&
+            r.tag_name.startsWith(inputs.prefix) &&
             r.author.id === bot_id &&
             r.body.includes(script_id),
     );
-    if (draft) {
+    for (const draft of drafts) {
         info(`⛔ Deleting Previous Draft: \u001b[31;1m${draft.tag_name}`);
         const response = await octokit.rest.repos.deleteRelease({
             ...context.repo,
