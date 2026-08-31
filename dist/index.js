@@ -36910,27 +36910,54 @@ async function processRelease(inputs) {
         return
     }
 
-    let [latest, previous] = releases.data;
+    const [latest, previous] = releases.data;
     // console.log('latest:', latest)
     // console.log('previous:', previous)
     console.log('latest.draft:', latest?.draft);
     console.log('previous.draft:', previous?.draft);
     console.log('latest.tag_name:', latest?.tag_name);
     console.log('previous.tag_name:', previous?.tag_name);
-    if (latest.draft && latest.author.id === bot_id && latest.body.includes(script_id)) {
-        info(`⛔ Deleting Latest Draft: \u001b[31;1m${latest.tag_name}`);
-        const response = await octokit.rest.repos.deleteRelease({
-            ...context.repo,
-            release_id: latest.id,
-        });
-        console.log('response.status:', response.status);
-        latest = previous;
-    }
 
-    const new_name = semver.inc(latest.tag_name, inputs.semver, inputs.identifier);
+    // Base for version increment is the latest published (non-draft) release.
+    // Draft tags are not created until a release is published, so a draft makes
+    // a poor base: it can belong to another release train (e.g. a beta draft when
+    // drafting a stable release) and its tag is not a valid previous_tag.
+    // Stable runs must also exclude prereleases, otherwise a published
+    // prerelease ahead of the stable train (e.g. 1.1.5-beta.3 vs a last stable
+    // 1.0.1) would pollute the increment.
+    let base = inputs.prerelease
+        ? (releases.data.find((r) => !r.draft) ?? latest)
+        : (releases.data.find((r) => !r.draft && !r.prerelease) ?? latest);
+
+    // Prerelease runs continue an existing prerelease train of the same
+    // identifier at the next version (e.g. 1.0.2-beta.0 -> 1.0.2-beta.1)
+    // instead of restarting at -beta.0 for every run.
+    if (inputs.prerelease) {
+        const expected = semver.inc(base.tag_name, inputs.semver, inputs.identifier);
+        const expectedVersion = semver.parse(expected);
+        if (expectedVersion) {
+            const train = releases.data.find((r) => {
+                const parsed = semver.parse(r.tag_name);
+                return (
+                    parsed &&
+                    parsed.major === expectedVersion.major &&
+                    parsed.minor === expectedVersion.minor &&
+                    parsed.patch === expectedVersion.patch &&
+                    parsed.prerelease?.[0] === inputs.identifier
+                )
+            });
+            if (train) {
+                console.log('train.tag_name:', train.tag_name);
+                base = train;
+            }
+        }
+    }
+    console.log('base.tag_name:', base?.tag_name);
+
+    const new_name = semver.inc(base.tag_name, inputs.semver, inputs.identifier);
     console.log('new_name:', new_name);
     if (!new_name) {
-        throw new Error(`Unable to parse ${inputs.semver} from ${latest.tag_name}`)
+        throw new Error(`Unable to parse ${inputs.semver} from ${base.tag_name}`)
     }
     const tag_name = `${inputs.prefix}${new_name}`;
     console.log('tag_name:', tag_name);
@@ -36940,21 +36967,47 @@ async function processRelease(inputs) {
         : tag_name;
     console.log('notes_tag_name:', notes_tag_name);
 
-    let previous_tag_name = inputs.previous_tag_name || latest.tag_name;
-    if (!inputs.previous_tag_name && !inputs.prerelease) {
-        const stable = releases.data.find((r) => !r.draft && !r.prerelease);
-        if (stable) {
-            previous_tag_name = stable.tag_name;
-            console.log('stable.tag_name:', stable.tag_name);
+    // Only delete a previous draft with the exact tag being created. This keeps
+    // separate release trains (e.g. stable and beta workflows) from deleting
+    // each other's drafts.
+    const draft = releases.data.find(
+        (r) =>
+            r.draft &&
+            r.tag_name === tag_name &&
+            r.author.id === bot_id &&
+            r.body.includes(script_id),
+    );
+    if (draft) {
+        info(`⛔ Deleting Previous Draft: \u001b[31;1m${draft.tag_name}`);
+        const response = await octokit.rest.repos.deleteRelease({
+            ...context.repo,
+            release_id: draft.id,
+        });
+        console.log('response.status:', response.status);
+    }
+
+    // previous_tag must reference a tag that exists in git, otherwise
+    // generateReleaseNotes returns: Invalid previous_tag parameter.
+    let previous_tag_name = inputs.previous_tag_name;
+    if (!previous_tag_name) {
+        const prev = releases.data.find(
+            (r) => !r.draft && (!inputs.prerelease ? !r.prerelease : true),
+        );
+        if (prev) {
+            previous_tag_name = prev.tag_name;
+            console.log('previous.tag_name:', previous_tag_name);
         }
     }
     console.log('previous_tag_name:', previous_tag_name);
 
-    const notes = await octokit.rest.repos.generateReleaseNotes({
+    const notesRequest = {
         ...context.repo,
         tag_name: notes_tag_name,
-        previous_tag_name,
-    });
+    };
+    if (previous_tag_name) {
+        notesRequest.previous_tag_name = previous_tag_name;
+    }
+    const notes = await octokit.rest.repos.generateReleaseNotes(notesRequest);
     console.log('notes.status:', notes.status);
     console.log('notes.data:', notes.data);
 
