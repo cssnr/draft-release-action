@@ -36922,7 +36922,31 @@ async function processRelease(inputs) {
     // Draft tags are not created until a release is published, so a draft makes
     // a poor base: it can belong to another release train (e.g. a beta draft when
     // drafting a stable release) and its tag is not a valid previous_tag.
-    const base = releases.data.find((r) => !r.draft) ?? latest;
+    let base = releases.data.find((r) => !r.draft) ?? latest;
+
+    // Prerelease runs continue an existing prerelease train of the same
+    // identifier at the next version (e.g. 1.0.2-beta.0 -> 1.0.2-beta.1)
+    // instead of restarting at -beta.0 for every run.
+    if (inputs.prerelease) {
+        const expected = semver.inc(base.tag_name, inputs.semver, inputs.identifier);
+        const expectedVersion = semver.parse(expected);
+        if (expectedVersion) {
+            const train = releases.data.find((r) => {
+                const parsed = semver.parse(r.tag_name);
+                return (
+                    parsed &&
+                    parsed.major === expectedVersion.major &&
+                    parsed.minor === expectedVersion.minor &&
+                    parsed.patch === expectedVersion.patch &&
+                    parsed.prerelease?.[0] === inputs.identifier
+                )
+            });
+            if (train) {
+                console.log('train.tag_name:', train.tag_name);
+                base = train;
+            }
+        }
+    }
     console.log('base.tag_name:', base?.tag_name);
 
     const new_name = semver.inc(base.tag_name, inputs.semver, inputs.identifier);
