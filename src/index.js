@@ -94,7 +94,12 @@ async function processRelease(inputs) {
     // Draft tags are not created until a release is published, so a draft makes
     // a poor base: it can belong to another release train (e.g. a beta draft when
     // drafting a stable release) and its tag is not a valid previous_tag.
-    let base = releases.data.find((r) => !r.draft) ?? latest
+    // Stable runs must also exclude prereleases, otherwise a published
+    // prerelease ahead of the stable train (e.g. 1.1.5-beta.3 vs a last stable
+    // 1.0.1) would pollute the increment.
+    let base = inputs.prerelease
+        ? (releases.data.find((r) => !r.draft) ?? latest)
+        : (releases.data.find((r) => !r.draft && !r.prerelease) ?? latest)
 
     // Prerelease runs continue an existing prerelease train of the same
     // identifier at the next version (e.g. 1.0.2-beta.0 -> 1.0.2-beta.1)
