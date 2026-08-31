@@ -21,6 +21,6 @@
     "@rollup/plugin-node-resolve": "^16.0.3",
     "eslint": "^10.9.1",
     "prettier": "^3.9.6",
-    "rollup": "^4.63.0"
+    "rollup": "^4.63.1"
   }
 }
