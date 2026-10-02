@@ -40,6 +40,8 @@ Want to see more feature? [Request one](https://github.com/cssnr/draft-release-a
 | semver            |  -   | `prerelease`       | Semantaic Version to Incriment     |
 | identifier        |  -   | `beta`             | Prerelease Tag to Append           |
 | prerelease        |  -   | `true`             | Set Draft as Prerelease            |
+| calver            |  -   | `false`            | Enable Calendar Versioning         |
+| suffix            |  -   | -                  | Suffix Appended to Tag Name        |
 | prefix            |  -   | -                  | Release Tag Prefix                 |
 | previous_tag_name |  -   | -                  | Previous Tag or SHA for Comparison |
 | notes_prefix      |  -   | -                  | Prefix for Release Notes Tag       |
@@ -48,6 +50,17 @@ Want to see more feature? [Request one](https://github.com/cssnr/draft-release-a
 
 **semver:** This is the string passed to `semver.inc()` to determine which version to increment.
 For more details, see the [docs](https://github.com/npm/node-semver?tab=readme-ov-file#functions).
+
+**calver:** Enable calendar versioning with `YYYY.MM.NN` in UTC. `MM`/`NN` are zero-padded,
+`NN` starts at `00` and resets on UTC month rollover. Bypasses `semver.inc()`.
+With `prerelease: true` this drafts `YYYY.MM.NN-identifier.0` (e.g. `2026.10.01-beta.0`),
+incrementing the beta counter only on published prereleases. With `prerelease: false`
+it drafts the stable `YYYY.MM.NN` (e.g. `2026.10.01`).
+
+**suffix:** Opaque string appended last: `prefix + YYYY.MM.NN[-identifier.N] + suffix`.
+A leading `-` or `+` is added when missing, so `abc1234` and `-abc1234` both yield `-abc1234`.
+Use this for a short SHA (e.g. `suffix: -${{ github.sha }}` truncated in the workflow).
+Applies in both `semver` and `calver` modes. Stripped before version comparison.
 
 **previous_tag_name:** Override the previous tag used as the starting point for generating release notes.
 This can be a tag name or a commit SHA. Use this if your release tag was moved after publication

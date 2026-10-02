@@ -102,7 +102,19 @@ async function processRelease(inputs) {
         : (releases.data.find((r) => !r.draft && !r.prerelease) ?? latest)
     console.log('base.tag_name:', base?.tag_name)
 
-    const new_name = semver.inc(base.tag_name, inputs.semver, inputs.identifier)
+    const suffix = normalizeSuffix(inputs.suffix)
+    console.log('suffix:', suffix)
+
+    let new_name
+    if (inputs.calver) {
+        new_name = `${getNextCalver(releases.data, inputs)}${suffix}`
+    } else {
+        const inc = semver.inc(base.tag_name, inputs.semver, inputs.identifier)
+        if (!inc) {
+            throw new Error(`Unable to parse ${inputs.semver} from ${base.tag_name}`)
+        }
+        new_name = suffix ? `${inc}${suffix}` : inc
+    }
     console.log('new_name:', new_name)
     if (!new_name) {
         throw new Error(`Unable to parse ${inputs.semver} from ${base.tag_name}`)
@@ -210,6 +222,8 @@ async function addSummary(inputs, response) {
  * @property {string} semver
  * @property {string} identifier
  * @property {boolean} prerelease
+ * @property {boolean} calver
+ * @property {string} suffix
  * @property {string} prefix
  * @property {boolean} summary
  * @property {string} token
@@ -222,10 +236,116 @@ function getInputs() {
         semver: core.getInput('semver', { required: true }),
         identifier: core.getInput('identifier'),
         prerelease: core.getBooleanInput('prerelease'),
+        calver: core.getBooleanInput('calver'),
+        suffix: core.getInput('suffix'),
         prefix: core.getInput('prefix'),
         summary: core.getBooleanInput('summary'),
         token: core.getInput('token', { required: true }),
         previous_tag_name: core.getInput('previous_tag_name'),
         notes_prefix: core.getInput('notes_prefix'),
     }
+}
+
+/**
+ * Normalize Suffix
+ * Ensures a leading "-" or "+" separator so "abc1234" becomes "-abc1234".
+ * Empty string stays empty. Caller passes the "-" if they want it.
+ * @param {string} suffix
+ * @return {string}
+ */
+function normalizeSuffix(suffix) {
+    if (!suffix) {
+        return ''
+    }
+    const trimmed = suffix.trim()
+    if (!trimmed) {
+        return ''
+    }
+    if (trimmed.startsWith('-') || trimmed.startsWith('+')) {
+        return trimmed
+    }
+    return `-${trimmed}`
+}
+
+/**
+ * Parse CalVer Tag
+ * Strips prefix, then matches YYYY.MM.NN[-identifier.N], ignoring any
+ * trailing suffix (e.g. short SHA). Returns null when not a CalVer tag.
+ * @param {string} tag_name
+ * @param {string} prefix
+ * @return {{year:number,month:number,micro:number,identifier:string|null,prerelease:number|null}|null}
+ */
+function parseCalver(tag_name, prefix) {
+    let rest = tag_name
+    if (prefix) {
+        if (!rest.startsWith(prefix)) {
+            return null
+        }
+        rest = rest.slice(prefix.length)
+    }
+    const match = rest.match(/^(\d{4})\.(\d{2})\.(\d{2,})(?:-([^.+\s]+)\.(\d+))?/)
+    if (!match) {
+        return null
+    }
+    return {
+        year: parseInt(match[1], 10),
+        month: parseInt(match[2], 10),
+        micro: parseInt(match[3], 10),
+        identifier: match[4] ?? null,
+        prerelease: match[5] !== undefined ? parseInt(match[5], 10) : null,
+    }
+}
+
+/**
+ * Get Next CalVer Version (without prefix/suffix)
+ * NN resets to 00 on UTC month rollover. Beta counter resets to 0 on
+ * every NN bump and only increments on published prereleases.
+ * @param {Array} releases
+ * @param {Inputs} inputs
+ * @return {string}
+ */
+function getNextCalver(releases, inputs) {
+    const now = new Date()
+    const year = now.getUTCFullYear()
+    const month = now.getUTCMonth() + 1
+    const current = `${year}.${String(month).padStart(2, '0')}`
+    console.log('current:', current)
+
+    const candidates = releases
+        .filter((r) => !r.draft && (inputs.prerelease ? true : !r.prerelease))
+        .map((r) => parseCalver(r.tag_name, inputs.prefix))
+        .filter((p) => p && p.year === year && p.month === month)
+        .filter((p) => {
+            if (p.identifier === null) {
+                return true
+            }
+            return p.identifier === inputs.identifier
+        })
+    console.log('calver candidates:', candidates.length)
+
+    const pad = (n) => String(n).padStart(2, '0')
+    if (!candidates.length) {
+        if (inputs.prerelease) {
+            return `${current}.00-${inputs.identifier}.0`
+        }
+        return `${current}.00`
+    }
+
+    const maxMicro = Math.max(...candidates.map((p) => p.micro))
+    const atMax = candidates.filter((p) => p.micro === maxMicro)
+    const hasStable = atMax.some((p) => p.identifier === null)
+    const maxBeta = Math.max(
+        -1,
+        ...atMax.filter((p) => p.identifier !== null).map((p) => p.prerelease ?? -1),
+    )
+    if (inputs.prerelease) {
+        if (hasStable) {
+            return `${current}.${pad(maxMicro + 1)}-${inputs.identifier}.0`
+        }
+        return `${current}.${pad(maxMicro)}-${inputs.identifier}.${maxBeta + 1}`
+    }
+    if (hasStable) {
+        return `${current}.${pad(maxMicro + 1)}`
+    }
+    return `${current}.${pad(maxMicro)}`
 }
