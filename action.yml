@@ -21,6 +21,11 @@ inputs:
   prerelease:
     description: "Mark Release as prerelease"
     default: "true"
+  calver:
+    description: "Enable Calendar Versioning YYYY.MM.NN"
+    default: "false"
+  suffix:
+    description: "Suffix Appended to Tag Name"
   prefix:
     description: "Release Tag Prefix"
   summary:
