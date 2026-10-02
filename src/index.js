@@ -6,7 +6,7 @@ import semver from 'semver'
 const bot_id = 41898282
 const script_id = '<!-- cssnr/draft-release-action -->'
 
-;(async () => {
+void (async () => {
     try {
         core.info(`🏳️ Starting Draft Release Action`)
 
@@ -283,16 +283,16 @@ function parseCalver(tag_name, prefix) {
         }
         rest = rest.slice(prefix.length)
     }
-    const match = rest.match(/^(\d{4})\.(\d{2})\.(\d{2,})(?:-([^.+\s]+)\.(\d+))?/)
+    const match = /^(\d{4})\.(\d{2})\.(\d{2,})(?:-([^.+\s]+)\.(\d+))?/.exec(rest)
     if (!match) {
         return null
     }
     return {
-        year: parseInt(match[1], 10),
-        month: parseInt(match[2], 10),
-        micro: parseInt(match[3], 10),
+        year: Number.parseInt(match[1], 10),
+        month: Number.parseInt(match[2], 10),
+        micro: Number.parseInt(match[3], 10),
         identifier: match[4] ?? null,
-        prerelease: match[5] !== undefined ? parseInt(match[5], 10) : null,
+        prerelease: match[5] !== undefined ? Number.parseInt(match[5], 10) : null,
     }
 }
 
@@ -314,7 +314,7 @@ function getNextCalver(releases, inputs) {
     const candidates = releases
         .filter((r) => !r.draft && (inputs.prerelease ? true : !r.prerelease))
         .map((r) => parseCalver(r.tag_name, inputs.prefix))
-        .filter((p) => p && p.year === year && p.month === month)
+        .filter((p) => p?.year === year && p?.month === month)
         .filter((p) => {
             if (p.identifier === null) {
                 return true
